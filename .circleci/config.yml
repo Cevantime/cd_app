@@ -10,8 +10,14 @@ jobs:
           name: "Build Docker image"
           command: |
             echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_LOGIN} --password-stdin
-            docker build -t cevantime/cd_app .
-            docker push cevantime/cd_app
+            if [ "${CIRCLE_TAG}" != "" ]; then
+              docker build -t cevantime/cd_app:${CIRCLE_TAG} .
+              docker tag cevantime/cd_app:${CIRCLE_TAG} cevantime/cd_app:latest
+              docker push cevantime/cd_app:${CIRCLE_TAG}
+            else
+              docker build -t cevantime/cd_app .
+              docker push cevantime/cd_app
+            fi
   deploy:
     machine:
       enabled: true
@@ -22,13 +28,21 @@ jobs:
       - run:
           name: "Deploy image on kube cluster"
           command: |
-            ssh root@${PRODUCTION_SERVER_IP} "cd ${PRODUCTION_SERVER_PATH} && ./deploy"
+            ssh root@${PRODUCTION_SERVER_IP} "cd ${PRODUCTION_SERVER_PATH} && ./deploy ${CIRCLE_TAG}"
 
 workflows:
   version: 2
   build:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /.*/
       - deploy:
           requires:
             - build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
