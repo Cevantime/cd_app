@@ -11,11 +11,11 @@ jobs:
           command: |
             echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_LOGIN} --password-stdin
             if [ "${CIRCLE_TAG}" != "" ]; then
-              docker build -t cevantime/cd_app:${CIRCLE_TAG} .
+              docker build -t cevantime/cd_app:${CIRCLE_TAG} --build-arg DATABASE_URL=${DATABASE_URL} --build-arg APP_ENV=${APP_ENV} --build-arg APP_DEBUG=${APP_DEBUG} .
               docker tag cevantime/cd_app:${CIRCLE_TAG} cevantime/cd_app:latest
               docker push cevantime/cd_app:${CIRCLE_TAG}
             else
-              docker build -t cevantime/cd_app .
+              docker build -t cevantime/cd_app --build-arg DATABASE_URL=${DATABASE_URL} --build-arg APP_ENV=${APP_ENV} --build-arg APP_DEBUG=${APP_DEBUG} .
               docker push cevantime/cd_app
             fi
   deploy:
@@ -35,6 +35,8 @@ workflows:
   build:
     jobs:
       - build:
+          context:
+            - production
           filters:
             tags:
               only: /.*/
