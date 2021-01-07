@@ -20,4 +20,4 @@ RUN docker-php-ext-install pdo pdo_mysql gd opcache intl zip calendar
 
 RUN addgroup --system symfony --gid 1000 && adduser --system symfony --uid 1000 --ingroup symfony
 
-WORKDIR /var/www/symfony
+WORKDIR /var/www/app
