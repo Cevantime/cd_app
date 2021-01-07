@@ -12,9 +12,23 @@ jobs:
             echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_LOGIN} --password-stdin
             docker build -t cevantime/cd_app .
             docker push cevantime/cd_app
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "d6:ba:09:c8:ab:84:fa:f1:21:53:02:82:6e:06:59:96"
+      - run:
+          name: "Deploy image on kube cluster"
+          command: |
+            ssh root@${PRODUCTION_SERVER_IP} "cd ${PRODUCTION_SERVER_PATH} && ./deploy"
 
 workflows:
   version: 2
   build:
     jobs:
       - build
+      - deploy:
+          requires:
+            - build
