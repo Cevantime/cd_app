@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
@@ -31,20 +31,27 @@ jobs:
             ssh root@${PRODUCTION_SERVER_IP} "cd ${PRODUCTION_SERVER_PATH} && ./deploy ${CIRCLE_TAG}"
 
 workflows:
-  version: 2
-  build:
+  version: 2.1
+  staging:
+    when:
+      and:
+        - equal: [master, << pipeline.git.branch >>]
+    jobs:
+      - build:
+          context:
+            - staging
+  prod:
+    when: << pipeline.git.tag >>
     jobs:
       - build:
           context:
             - production
           filters:
             tags:
-              only: /.*/
+              only: /v.*/
       - deploy:
           requires:
             - build
           filters:
             tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+              only: /v.*/

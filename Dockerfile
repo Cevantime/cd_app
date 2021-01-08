@@ -30,4 +30,5 @@ RUN mkdir -p var && \
     composer install --no-dev --optimize-autoloader && \
     APP_ENV=$APP_ENV APP_DEBUG=$APP_DEBUG bin/console cache:clear && \
     chown -R www-data:www-data var && \
-    bin/console doctrine:migration:migrate --no-interaction
+    bin/console doctrine:migration:migrate --no-interaction && \
+    bin/console doctrine:fixtures:load --no-interaction

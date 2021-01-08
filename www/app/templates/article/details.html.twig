@@ -10,5 +10,10 @@
 	<div>
 		{{ article.content }}
 	</div>
+
+	<p>
+		par
+		{{ article.user.username}}
+	</p>
 	<a href="{{ path('home') }}">Retour à la page d'accueil</a>
 {% endblock %}
