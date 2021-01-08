@@ -14,7 +14,7 @@ COPY www/app /var/www/app
 
 ARG APP_ENV=dev
 ARG APP_DEBUG=1
-ARG DATABASE_URL=mysql://root:helloworld@db:3306/app?serverVersion=5.7
+ARG DATABASE_URL=mysql://root:helloworld@localshot:3307/app?serverVersion=5.7
 
 RUN echo ${APP_ENV}
 
