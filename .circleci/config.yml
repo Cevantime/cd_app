@@ -1,5 +1,36 @@
 version: 2.1
 jobs:
+  test:
+    docker:
+      - image: circleci/php:7.4-apache
+    steps:
+      - checkout
+      - run: sudo apt update
+      - run: sudo docker-php-ext-install pdo pdo_mysql opcache intl zip
+      - run:
+          name: "Install composer dependencies"
+          command: |
+            composer install -n --working-dir=www/app
+      - run:
+          name: "Clear cache"
+          command: |
+            cd www/app
+            bin/console cache:clear
+      - run:
+          name: "Update database"
+          command: |
+            cd www/app
+            DBURL=$(echo ${DATABASE_URL} | sed -e "s/\//\\\\\\//g")
+            sed -e "s/DATABASE_URL=.*/DATABASE_URL=$DBURL/" .env > .env.local
+            bin/console doctrine:migration:migrate --no-interaction
+            bin/console doctrine:fixtures:load --no-interaction
+      - run:
+          name: "Run tests"
+          command: |
+            cd www/app
+            cp phpunit.xml.${APP_ENV} phpunit.xml.dist
+            APP_ENV=test bin/phpunit
+
   build:
     docker:
       - image: circleci/buildpack-deps:stretch
@@ -37,13 +68,26 @@ workflows:
       and:
         - equal: [master, << pipeline.git.branch >>]
     jobs:
+      - test:
+          context:
+            - staging
       - build:
+          requires:
+            - test
           context:
             - staging
   prod:
     when: << pipeline.git.tag >>
     jobs:
+      - test:
+          context:
+            - production
+          filters:
+            tags:
+              only: /v.*/
       - build:
+          requires:
+            - test
           context:
             - production
           filters:

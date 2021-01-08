@@ -13,6 +13,7 @@
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
+            <directory>tests_prod</directory>
         </testsuite>
     </testsuites>
 
